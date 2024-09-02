@@ -10,22 +10,23 @@ class AzureOpenAIEncoder():
             api_version= api_version,
             api_key= api_key
         )
-    
+        self.model_name = deployment_name
     def encode(self,data:Data):
 
         text = data.text
-        if data.type == VectorType.DENSE:
-            emb = self.client.embeddings.create(input = text, model=self.model_name).data[0].embedding
-            data.vectors = emb 
-        
+        emb = self.client.embeddings.create(input = text, model=self.model_name).data[0].embedding
+        data.vectors = emb 
+
         return data
     
     def batch_encode(self,data):
 
+        embeded_data = []
         for data in data:
-            self.encode(data)
+            data = self.encode(data)
+            embeded_data.append(data)
         
-        return data
+        return embeded_data
 
     def __call__(self, data):
 

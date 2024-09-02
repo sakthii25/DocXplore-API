@@ -1,5 +1,6 @@
 from typing import Any
 from data.types import Data,TextType
+import uuid
 
 class Chunking():
     def __init__(self, chunk_size=1000, overlap=200, min_chunk_len=5, split_func=None) -> None:
@@ -20,6 +21,9 @@ class Chunking():
         self.split_func = split_func or (lambda x : x.split(" "))
 
 
+    def create_chunkID(self):
+        id = uuid.uuid4().hex
+        return id
     
     def chunk_text(self, document:Data):
         """ split long text to chunk of text with given chunk size
@@ -30,6 +34,7 @@ class Chunking():
         """
         type = document.type 
         metadata = document.metadata
+        id = document.id
         chunks = []
 
         def add_overlap_to_context(chunk, overlap):
@@ -38,7 +43,8 @@ class Chunking():
         def add_chunk(curr_chunk, overlap_chunk):
             if len(curr_chunk) + self.overlap > self.min_chunk_len:
                 chunk_text = add_overlap_to_context(curr_chunk, overlap_chunk)
-                chunk = Data(type = type,text = chunk_text,metadata = metadata)
+                metadata["chunk_id"] = self.create_chunkID()
+                chunk = Data(type = type,text = chunk_text,id=id,metadata = metadata)
                 chunks.append(chunk)
 
         curr_chunk = []

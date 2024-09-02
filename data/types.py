@@ -18,6 +18,7 @@ class Vectors(BaseModel):
 
 class Data(BaseModel):
     type : TextType
+    id : str 
     text : str 
     metadata : dict = {}
     vectors : list[Vectors] = []

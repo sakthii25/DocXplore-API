@@ -50,8 +50,9 @@ class QdrantDB:
         payload = {}
         payload['text'] = data.content
         payload['parent_id'] = data.id
-        for key, value in data.metadata.items():
-            payload[key] = value
+
+        for key in data.persist_to_db:
+            payload[key] = data.metadata[key]
         return payload
     
     def process_data(self,data:Data):

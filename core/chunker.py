@@ -27,10 +27,7 @@ class Chunking():
     
     def chunk_text(self, data:Data):
         """ split long text to chunk of text with given chunk size
-
-            words will be split based on split func
-
-            heading is ignored in basic chunking
+            return list of Data
         """
         type = data.type 
         content = data.content
@@ -38,7 +35,6 @@ class Chunking():
         id = data.id
         chunks = []
 
-        print("metadata ",metadata)
         def add_overlap_to_context(chunk, overlap):
             return  " ".join(overlap) + " " + " ".join(chunk) 
         
@@ -46,7 +42,7 @@ class Chunking():
             if len(curr_chunk) + self.overlap > self.min_chunk_len:
                 chunk_text = add_overlap_to_context(curr_chunk, overlap_chunk)
                 metadata["chunk_id"] = self.create_chunkID()
-                chunk = Data(type = type,content = chunk_text,id = id,metadata = metadata)
+                chunk = Data(type = type,content = chunk_text,id = id,metadata = metadata,persist_to_db=["chunk_id"])
                 chunks.append(chunk)
 
         curr_chunk = []

@@ -21,6 +21,7 @@ class Data(BaseModel):
     id : str = None
     content : str 
     metadata : dict = {}
+    persist_to_db :list[str] = []
     vectors : list[Vectors] = []
 
     

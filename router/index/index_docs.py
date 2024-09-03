@@ -3,7 +3,8 @@ from core.chunker import Chunking
 from core.encoder import AzureOpenAIEncoder
 from core.llm import AzureGPTLLM
 from core.vectordb import QdrantDB
-from core.prompt import SummarizerPrompt
+from core.prompt import SummarizerPrompt,CodextractorPrompt
+import logging
 import uuid
 import os
 
@@ -41,17 +42,28 @@ class IndexDocs:
 
     def doc_summary(self,data:Data):
 
-        print(data.metadata)
         prompt = SummarizerPrompt()
         data = prompt(data)
 
+        #llm to summary the whole document 
         llm = AzureGPTLLM(deployment_name=AZURE_GPT_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
         data = llm(data)
-        data.content = data.metadata['response']
+        summary = data.metadata['response']
+
+        prompt = CodextractorPrompt()
+        data = prompt(data)
+
+        #llm to extract the code from document
+        data = llm(data)
+        data.metadata['code'] = data.metadata['response']
+        data.persist_to_db.append('code')
+        
+        #replace the whole document text  with its summary
+        data.content = summary
 
         db = QdrantDB()
         db.as_indexer(data,collection_name='doc summary')
-        print("Successfully index the doc summary")
+        logging.info("Successfully index the doc summary")
     
     def __call__(self, req:dict):
         return self.index(req['path'],req['collection_name'])

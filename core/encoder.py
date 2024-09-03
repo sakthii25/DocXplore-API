@@ -13,7 +13,7 @@ class AzureOpenAIEncoder():
         self.model_name = deployment_name
     def encode(self,data:Data):
 
-        text = data.text
+        text = data.content
         emb = self.client.embeddings.create(input = text, model=self.model_name).data[0].embedding
         data.vectors = emb 
 

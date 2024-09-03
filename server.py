@@ -1,34 +1,35 @@
 from flask import Flask, jsonify, request
-from router.index import index_docs 
-from router.query import chat_docs
-from router.helper import create_collection
+from router.index.index_docs import IndexDocs 
+from router.query.chat_docs import ChatDocs
+from router.helper_functions import create_collections
 
 app = Flask(__name__)
 
 @app.get("/")
 def root():
-    return {"Hello": "World"}
+    return {"message" : "Hello World!"}
 
 @app.get("/healthcheck")
 def health_check():
     return {"response": "ok"}
 
 @app.post("/index-docs")
-def index_docs():
+def index():
     req = request.json
-    res = index_docs(req)
+    index = IndexDocs()
+    res = index(req)
     return jsonify(res)
 
 @app.post("/query-docs")
-def query_docs():
+def query():
     req = request.json
-    res = chat_docs(req)
-    return res
+    res = ChatDocs(req)
+    return jsonify(res)
 
 @app.get("/create-collection")
 def create_collection():
     req = request.json
-    res = create_collection(req)
+    res = create_collections(req)
     return jsonify(res)
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ class Chunking():
             heading is ignored in basic chunking
         """
         type = document.type 
+        content = document.content
         metadata = document.metadata
         id = document.id
         chunks = []
@@ -44,13 +45,13 @@ class Chunking():
             if len(curr_chunk) + self.overlap > self.min_chunk_len:
                 chunk_text = add_overlap_to_context(curr_chunk, overlap_chunk)
                 metadata["chunk_id"] = self.create_chunkID()
-                chunk = Data(type = type,text = chunk_text,id=id,metadata = metadata)
+                chunk = Data(type = type,content = chunk_text,id = id,metadata = metadata)
                 chunks.append(chunk)
 
         curr_chunk = []
         overlap_chunk = []
         
-        for word in self.split_func(document.text):
+        for word in self.split_func(content):
             if len(curr_chunk) + self.overlap < self.chunk_size:
                 curr_chunk.append(word)
             else:

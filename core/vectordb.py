@@ -1,4 +1,4 @@
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient,models
 from qdrant_client.models import  PointStruct
 from data.types import Data
 
@@ -27,10 +27,27 @@ class QdrantDB:
     def collection_exists(self,collection_name):
         return self.client.collection_exists(collection_name)
     
+    def search_point(self,collection_name,id):
+        res = self.client.scroll(
+                collection_name=collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="parent_id",
+                            match=models.MatchValue(value=id),
+                        ),
+                    ]
+                ),
+            )
+        
+        res = res[0] # res is a tuple we need the first element 
+        #each parent_id in db is unique so it only return the one point in a collection
+        return res[0]
+            
     def get_payload(self,data:Data):
         payload = {}
-        payload['text'] = data.text 
-        payload['parent_docid'] = data.id
+        payload['text'] = data.content
+        payload['parent_id'] = data.id
         for key, value in data.metadata.items():
             payload[key] = value
         return payload
@@ -39,14 +56,18 @@ class QdrantDB:
 
         points = []
         for data in data:
-           point_id = data.metadata.get('chunk_id', data.id)
-           vectors = {}
-           vectors["text_dense_vec"] = data.vectors
-           payload = self.get_payload(data)
-           point = PointStruct(id=point_id,vector=vectors,payload=payload)
-           points.append(point)
+            point_id = data.metadata.get('chunk_id', data.id)
+            vectors = {}
+           
+            if data.vectors != []:
+               vectors["text_dense_vec"] = data.vectors
+
+            payload = self.get_payload(data)
+            point = PointStruct(id=point_id,vector=vectors,payload=payload)
+            points.append(point)
 
         return points
+    
     
     def upload_points(self, collection_name, vectors, batch_size=64):
         try:
@@ -74,4 +95,28 @@ class QdrantDB:
             self.upload_points(collection_name, data)
         except Exception as ex:
             raise ex
+        
+    def as_retriever(self,query:Data,collection_name:str, top_k:int=5):
+        if collection_name is None or not self.client.collection_exists(collection_name):
+            raise Exception(f"Collection {collection_name} does not exist")
+
+        req = models.SearchRequest(
+                            vector=models.NamedVector(
+                                name='text_dense_vec',
+                                vector=query.vectors
+                            ),
+                            limit=top_k,
+                            with_payload=True,
+                        )
+        res = self.client.search_batch(
+                    collection_name=collection_name,
+                    requests=[req])
+        
+        context = []
+        for res_per_query in res:
+            for r in res_per_query:
+                context.append(r.payload)
+                        
+        query.metadata['context'] = context
+        return query
 

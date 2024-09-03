@@ -9,7 +9,7 @@ class VectorType(str, Enum):
 
 class TextType(str, Enum):
     INDEX = "index"
-    SEARCH = "search"
+    QUERY = "query"
 
 class Vectors(BaseModel):
     vec_name : str
@@ -18,8 +18,8 @@ class Vectors(BaseModel):
 
 class Data(BaseModel):
     type : TextType
-    id : str 
-    text : str 
+    id : str = None
+    content : str 
     metadata : dict = {}
     vectors : list[Vectors] = []
 

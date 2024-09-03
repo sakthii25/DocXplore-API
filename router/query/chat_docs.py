@@ -30,7 +30,8 @@ class ChatDocs:
         llm = AzureGPTLLM(deployment_name=AZURE_GPT_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
         query = llm(query)
 
-        return query
+        response = query.metadata['response']
+        return {"resonse" : response}
 
     def __call__(self, req:dict):
         return self.chat(req['query'],req['collection_name'])

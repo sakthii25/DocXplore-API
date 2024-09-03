@@ -37,10 +37,11 @@ class IndexDocs:
         db.as_indexer(embeded_data,collection_name=collection_name)
 
         self.doc_summary(data)
-        return {"message" : "Successfully index the document"}
+        return {"response" : "Successfully index the document"}
 
     def doc_summary(self,data:Data):
 
+        print(data.metadata)
         prompt = SummarizerPrompt()
         data = prompt(data)
 

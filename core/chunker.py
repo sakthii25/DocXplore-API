@@ -25,19 +25,20 @@ class Chunking():
         id = uuid.uuid4().hex
         return id
     
-    def chunk_text(self, document:Data):
+    def chunk_text(self, data:Data):
         """ split long text to chunk of text with given chunk size
 
             words will be split based on split func
 
             heading is ignored in basic chunking
         """
-        type = document.type 
-        content = document.content
-        metadata = document.metadata
-        id = document.id
+        type = data.type 
+        content = data.content
+        metadata = data.metadata.copy()
+        id = data.id
         chunks = []
 
+        print("metadata ",metadata)
         def add_overlap_to_context(chunk, overlap):
             return  " ".join(overlap) + " " + " ".join(chunk) 
         
@@ -59,8 +60,8 @@ class Chunking():
                 overlap_chunk = curr_chunk[-self.overlap:]
                 curr_chunk = []
 
-        add_chunk(curr_chunk, overlap_chunk)
+        add_chunk(curr_chunk, overlap_chunk) 
         return chunks   
     
-    def __call__(self, document):
-        return self.chunk_text(document)
+    def __call__(self, data):
+        return self.chunk_text(data)

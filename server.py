@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from router.index.index_docs import IndexDocs 
 from router.query.chat_docs import ChatDocs
-from router.helper_functions import create_collections
+from router.helper_functions import create_collections,delete_collections
 
 app = Flask(__name__)
 
@@ -23,13 +23,20 @@ def index():
 @app.post("/query-docs")
 def query():
     req = request.json
-    res = ChatDocs(req)
+    chat = ChatDocs()
+    res = chat(req)
     return jsonify(res)
 
 @app.get("/create-collection")
 def create_collection():
     req = request.json
     res = create_collections(req)
+    return jsonify(res)
+
+@app.get("/delete-collection")
+def delete_collection():
+    req = request.json
+    res = delete_collections(req)
     return jsonify(res)
 
 if __name__ == "__main__":

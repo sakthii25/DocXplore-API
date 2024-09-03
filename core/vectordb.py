@@ -23,6 +23,8 @@ class QdrantDB:
                 collection_name=collection_name,
                 **kwargs
             )
+    def delete_collection(self,collection_name):
+        return self.client.delete_collection(collection_name=collection_name)
 
     def collection_exists(self,collection_name):
         return self.client.collection_exists(collection_name)
@@ -79,7 +81,7 @@ class QdrantDB:
             )
             return operation_info
         except Exception as ex:
-             raise Exception(f"Exception while inserting point in {collection_name}")
+             raise ex
     
 
     def as_indexer(self,data:Data,collection_name = None):

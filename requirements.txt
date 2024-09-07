@@ -1,5 +1,5 @@
-flask
 pydantic
 openai
 qdrant_client
-
+pymongo
+fastapi

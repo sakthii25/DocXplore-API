@@ -1,4 +1,4 @@
-from core.vectordb import QdrantDB
+from src.core.vectordb import QdrantDB
 from pymongo import MongoClient
 from qdrant_client.models import VectorParams,Distance
 

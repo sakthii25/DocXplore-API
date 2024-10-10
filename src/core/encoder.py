@@ -1,5 +1,5 @@
 from typing import List, Any
-from data.types import Data,VectorType
+from src.data.types import Data,VectorType
 from openai import OpenAI, AzureOpenAI
 
 class AzureOpenAIEncoder():

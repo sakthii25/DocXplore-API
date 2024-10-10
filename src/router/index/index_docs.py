@@ -1,13 +1,14 @@
-from data.types import Data,TextType
-from core.chunker import Chunking
-from core.encoder import AzureOpenAIEncoder
-from core.llm import AzureGPTLLM
-from core.vectordb import QdrantDB
-from core.prompt import SummarizerPrompt,CodextractorPrompt
+from src.data.types import Data,TextType
+from src.core.chunker import Chunking
+from src.core.encoder import AzureOpenAIEncoder
+from src.core.llm import AzureGPTLLM
+from src.core.vectordb import QdrantDB
+from src.core.prompt import SummarizerPrompt,CodextractorPrompt
 import logging
 import uuid
 import os
 
+log = logging(__name__)
 
 AZURE_GPT_DEPLOYMENT_NAME = os.getenv("AZURE_GPT_DEPLOYMENT_NAME")
 AZURE_EMB_DEPLOYMENT_NAME = os.getenv("AZURE_EMB_DEPLOYMENT_NAME")
@@ -63,10 +64,12 @@ class IndexDocs:
 
         db = QdrantDB()
         db.as_indexer(data,collection_name='doc summary')
-        logging.info("Successfully index the doc summary")
+        log.info("Successfully index the doc summary")
     
     def __call__(self, req:dict):
-        return self.index(req['path'],req['collection_name'])
+        path = req.get('path',None)
+        collection_name = req.get('collection_name',None)
+        return self.index(path,collection_name)
 
 
     

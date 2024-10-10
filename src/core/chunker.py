@@ -1,5 +1,5 @@
 from typing import Any
-from data.types import Data,TextType
+from src.data.types import Data
 import uuid
 
 class Chunking():

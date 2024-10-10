@@ -1,7 +1,7 @@
 from typing import Any
-from core.vectordb import QdrantDB
+from src.core.vectordb import QdrantDB
 
-from data.types import Data
+from src.data.types import Data
 
 default_prompt="""
 You are a highly intelligent and precise question-answering assistant.

@@ -1,6 +1,6 @@
 from typing import Any
 from openai import AzureOpenAI
-from data.types import Data
+from src.data.types import Data
 
 class AzureGPTLLM():
     def __init__(self, deployment_name=None, api_base=None, api_version=None, api_key=None, stream=False, max_tokens=1000) -> None:

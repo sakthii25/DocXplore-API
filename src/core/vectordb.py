@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient,models
 from qdrant_client.models import  PointStruct
-from data.types import Data
+from src.data.types import Data
 
 class QdrantDB:
 

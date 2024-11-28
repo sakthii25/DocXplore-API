@@ -75,3 +75,5 @@ def delete_collection(req:Collection):
 
 if __name__ == "__main__":
     uvicorn.run(app)
+
+    

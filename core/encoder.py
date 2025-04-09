@@ -1,5 +1,5 @@
-from typing import List, Any
-from data.types import Data,VectorType
+from typing import List
+from data.types import Data
 from openai import OpenAI, AzureOpenAI
 
 class AzureOpenAIEncoder():
@@ -11,7 +11,8 @@ class AzureOpenAIEncoder():
             api_key= api_key
         )
         self.model_name = deployment_name
-    def encode(self,data:Data):
+
+    def encode(self, data:Data):
 
         text = data.content
         emb = self.client.embeddings.create(input = text, model=self.model_name).data[0].embedding

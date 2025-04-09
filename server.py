@@ -1,33 +1,26 @@
-from fastapi import FastAPI,Request,HTTPException
-from pydantic import BaseModel
-from fastapi.responses import JSONResponse
-import uvicorn
 import os
+import logging
+import uvicorn
+
+from pydantic import BaseModel
+from fastapi import FastAPI,Request,HTTPException
+from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
+from typing import Optional
+
 from router.index.index_docs import IndexDocs 
 from router.query.chat_docs import ChatDocs
-from router.helper_functions import create_collections,delete_collections,AtlasClient
-from dotenv import load_dotenv
+from router.helper_functions import *
+from data.types import *
 
-load_dotenv()
-
-uri = os.getenv('URI')
-database = os.getenv('DATABASE')
-collection_name = os.getenv('COLLECTION_NAME')
+# NOT NEEDED NOW
+# load_dotenv()
+# uri = os.getenv('URI')
+# database = os.getenv('DATABASE')
+# collection_name = os.getenv('COLLECTION_NAME')
 
 app = FastAPI()
-db = AtlasClient(uri,database)
-
-
-class IndexDoc(BaseModel):
-    path: str 
-    collection_name: str 
-
-class QueryDoc(BaseModel):
-    query: str 
-    collection_name: str 
-
-class Collection(BaseModel):
-    collection_name: str 
+# db = AtlasClient(uri,database)
 
 @app.get("/")
 def root():
@@ -73,5 +66,18 @@ def delete_collection(req:Collection):
     res = delete_collections(req.model_dump())
     return JSONResponse(res)
 
+def configure_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[
+            logging.FileHandler("app.log"),
+            logging.StreamHandler()  # for terminal
+        ]
+    )
+
+configure_logging()
+
 if __name__ == "__main__":
-    uvicorn.run(app)
+    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True, log_level="info")

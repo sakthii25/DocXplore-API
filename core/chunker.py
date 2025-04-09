@@ -1,6 +1,8 @@
-from typing import Any
-from data.types import Data,TextType
 import uuid
+
+from core.constants import CHUNK_ID
+from typing import Any
+from data.types import Data
 
 class Chunking():
     def __init__(self, chunk_size=1000, overlap=200, min_chunk_len=5, split_func=None) -> None:
@@ -41,8 +43,8 @@ class Chunking():
         def add_chunk(curr_chunk, overlap_chunk):
             if len(curr_chunk) + self.overlap > self.min_chunk_len:
                 chunk_text = add_overlap_to_context(curr_chunk, overlap_chunk)
-                metadata["chunk_id"] = self.create_chunkID()
-                chunk = Data(type = type,content = chunk_text,id = id,metadata = metadata,persist_to_db=["chunk_id"])
+                metadata[CHUNK_ID] = self.create_chunkID()
+                chunk = Data(type = type,content = chunk_text,id = id,metadata = metadata,persist_to_db=[CHUNK_ID])
                 chunks.append(chunk)
 
         curr_chunk = []

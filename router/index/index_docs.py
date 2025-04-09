@@ -1,32 +1,25 @@
+import uuid
+import logging
+
 from data.types import Data,TextType
 from core.chunker import Chunking
 from core.encoder import AzureOpenAIEncoder
 from core.llm import AzureGPTLLM
 from core.vectordb import QdrantDB
+from core.constants import *
 from core.prompt import SummarizerPrompt,CodextractorPrompt
-import logging
-import uuid
-import os
-
-
-AZURE_GPT_DEPLOYMENT_NAME = os.getenv("AZURE_GPT_DEPLOYMENT_NAME")
-AZURE_EMB_DEPLOYMENT_NAME = os.getenv("AZURE_EMB_DEPLOYMENT_NAME")
-AZURE_BASE_URL = os.getenv("AZURE_BASE_URL") 
-AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
-AZURE_API_KEY = os.getenv("AZURE_API_KEY")
 
 class IndexDocs:
     def __init__(self) -> None:
         pass
 
-
-    def index(self,path,collection_name):
+    def index(self, path, collection_name, summary_collection_name):
 
         with open(path,"r") as file:
             text = file.read()
 
         doc_id = uuid.uuid5(uuid.NAMESPACE_DNS,path).hex
-        data = Data(type = TextType.INDEX,content = text,id=doc_id)
+        data = Data(type = TextType.INDEX, content = text, id=doc_id)
 
         chunker = Chunking(chunk_size=500,overlap=100) 
         chunked_data = chunker(data) 
@@ -35,41 +28,42 @@ class IndexDocs:
         embeded_data = encoder(chunked_data)
 
         db = QdrantDB() 
-        db.as_indexer(embeded_data,collection_name=collection_name)
+        db.as_indexer(embeded_data, collection_name=collection_name)
 
-        self.doc_summary(data)
+        self.doc_summary(data, summary_collection_name)
         return {"response" : "Successfully index the document"}
 
-    def doc_summary(self,data:Data):
+    def doc_summary(self, data:Data, summary_collection_name):
 
-        prompt = SummarizerPrompt()
-        data = prompt(data)
+        summarizer = SummarizerPrompt()
+        data = summarizer.generate_prompt(data)
 
         #llm to summary the whole document 
         llm = AzureGPTLLM(deployment_name=AZURE_GPT_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
         data = llm(data)
-        summary = data.metadata['response']
+        summary = data.metadata[RESPONSE]
 
-        prompt = CodextractorPrompt()
-        data = prompt(data)
+        with open("test.txt","w") as file:
+            file.write(summary)
+
+        codeExtractor = CodextractorPrompt()
+        data = codeExtractor.generate_prompt(data)
 
         #llm to extract the code from document
         data = llm(data)
-        data.metadata['code'] = data.metadata['response']
-        data.persist_to_db.append('code')
+        data.metadata[CODE] = data.metadata[RESPONSE]
+        data.persist_to_db.append(CODE)
+
+        with open("test.txt","+a") as file:
+            file.write("\n" "_"*100+"\n" + data.metadata[CODE])
         
         #replace the whole document text  with its summary
         data.content = summary
+        data.parent = True
 
         db = QdrantDB()
-        db.as_indexer(data,collection_name='doc summary')
+        db.as_indexer(data, collection_name=summary_collection_name)
         logging.info("Successfully index the doc summary")
     
     def __call__(self, req:dict):
-        return self.index(req['path'],req['collection_name'])
-
-
-    
-
-
-
+        return self.index(req['path'], req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME)

@@ -1,6 +1,6 @@
-from typing import Any
 from openai import AzureOpenAI
 from data.types import Data
+from core.constants import *
 
 class AzureGPTLLM():
     def __init__(self, deployment_name=None, api_base=None, api_version=None, api_key=None, stream=False, max_tokens=1000) -> None:
@@ -27,7 +27,7 @@ class AzureGPTLLM():
             "stop": None
         }
 
-    def chat_payload(self,sys_prompt,usr_query):
+    def chat_payload(self, sys_prompt, usr_query):
         sys = {
             'role' : 'system',
             'content' : sys_prompt
@@ -52,18 +52,15 @@ class AzureGPTLLM():
         return response
     
     def chat(self,query:Data):
-        sys_prompt = query.metadata['prompt']
-        usr_query = query.content 
+        sys_prompt = query.metadata[SYSTEM_PROMPT]
+        usr_query = query.metadata[USER_PROMPT]
 
         chat_payload = self.chat_payload(sys_prompt,usr_query)
 
         res = self.call_llm(chat_payload)
 
-        query.metadata['response'] = res
+        query.metadata[RESPONSE] = res
         return query
 
     def __call__(self, query:Data):
         return self.chat(query)
-
-
-

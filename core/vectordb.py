@@ -1,7 +1,8 @@
 from qdrant_client import QdrantClient,models
 from qdrant_client.models import  PointStruct
-from data.types import Data
 
+from data.types import Data
+from core.constants import *
 class QdrantDB:
 
     def __init__(self, host: str = "http://localhost", port:str=6333, verbose=True):
@@ -23,19 +24,20 @@ class QdrantDB:
                 collection_name=collection_name,
                 **kwargs
             )
+
     def delete_collection(self,collection_name):
         return self.client.delete_collection(collection_name=collection_name)
 
     def collection_exists(self,collection_name):
         return self.client.collection_exists(collection_name)
     
-    def search_point(self,collection_name,id):
+    def search_point(self, collection_name, id):
         res = self.client.scroll(
                 collection_name=collection_name,
                 scroll_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="parent_id",
+                            key=DOC_ID,
                             match=models.MatchValue(value=id),
                         ),
                     ]
@@ -43,30 +45,31 @@ class QdrantDB:
             )
         
         res = res[0] # res is a tuple we need the first element 
-        #each parent_id in db is unique so it only return the one point in a collection
+        #each parent_id in collection 2 is unique so it only return the one point in a collection
         return res[0]
             
-    def get_payload(self,data:Data):
+    def get_payload(self, data:Data):
+        id = PARENT_ID if not data.parent else DOC_ID
         payload = {}
-        payload['text'] = data.content
-        payload['parent_id'] = data.id
+        payload[TEXT] = data.content
+        payload[id] = data.id
 
         for key in data.persist_to_db:
             payload[key] = data.metadata[key]
         return payload
     
-    def process_data(self,data:Data):
+    def process_data(self, data:Data):
 
         points = []
         for data in data:
-            point_id = data.metadata.get('chunk_id', data.id)
+            point_id = data.metadata.get(CHUNK_ID, data.id)
             vectors = {}
            
             if data.vectors != []:
-               vectors["text_dense_vec"] = data.vectors
+               vectors[DEFAULT_VECTOR_NAME] = data.vectors
 
             payload = self.get_payload(data)
-            point = PointStruct(id=point_id,vector=vectors,payload=payload)
+            point = PointStruct(id=point_id, vector=vectors, payload=payload)
             points.append(point)
 
         return points
@@ -85,7 +88,7 @@ class QdrantDB:
              raise ex
     
 
-    def as_indexer(self,data:Data,collection_name = None):
+    def as_indexer(self, data:Data, collection_name = None):
 
         if collection_name is None or not self.client.collection_exists(collection_name):
             raise Exception(f"Collection {collection_name} does not exist")
@@ -105,7 +108,7 @@ class QdrantDB:
 
         req = models.SearchRequest(
                             vector=models.NamedVector(
-                                name='text_dense_vec',
+                                name=DEFAULT_VECTOR_NAME,
                                 vector=query.vectors
                             ),
                             limit=top_k,
@@ -120,6 +123,5 @@ class QdrantDB:
             for r in res_per_query:
                 context.append(r.payload)
                         
-        query.metadata['context'] = context
+        query.metadata[CONTEXT] = context
         return query
-

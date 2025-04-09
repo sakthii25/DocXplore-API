@@ -38,7 +38,7 @@ class ChatDocs:
         query = llm(query)
 
         response = query.metadata['response']
-        return {"resonse" : response}
+        return {"response" : response}
 
     def __call__(self, req:dict):
         return self.chat(req['query'],req['collection_name'])

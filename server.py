@@ -37,19 +37,19 @@ def root():
 def health_check():
     return {"response": "ok"} 
 
-@app.middleware('http')
-def middleware(req: Request,call_next):
-    path = req.url.path 
-    if path in ["/","/health"]:
-        res = call_next(req) 
-        return res 
+# @app.middleware('http')
+# def middleware(req: Request,call_next):
+#     path = req.url.path 
+#     if path in ["/","/health"]:
+#         res = call_next(req) 
+#         return res 
     
-    api_key = req.headers.get('API_KEY')
-    check = db.find(collection_name,{'key': api_key})
-    if check is None:
-        raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
-    res = call_next(req) 
-    return res
+#     api_key = req.headers.get('API_KEY')
+#     check = db.find(collection_name,{'key': api_key})
+#     if check is None:
+#         raise HTTPException(status_code=401, detail="Unauthorized: Invalid API Key")
+#     res = call_next(req) 
+#     return res
 
 @app.post("/index-docs")
 def index(req:IndexDoc):
@@ -75,5 +75,3 @@ def delete_collection(req:Collection):
 
 if __name__ == "__main__":
     uvicorn.run(app)
-
-    

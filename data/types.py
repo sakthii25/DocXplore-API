@@ -40,3 +40,7 @@ class Data(BaseModel):
     metadata : dict = {}
     persist_to_db :list[str] = []
     vectors : list[Vectors] = []
+
+class Message(BaseModel):
+    role : str 
+    content : str

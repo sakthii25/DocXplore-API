@@ -1,5 +1,7 @@
 from openai import AzureOpenAI
-from data.types import Data
+
+import requests
+from data.types import Data,Message
 from core.constants import *
 
 class AzureGPTLLM():
@@ -28,16 +30,12 @@ class AzureGPTLLM():
         }
 
     def chat_payload(self, sys_prompt, usr_query):
-        sys = {
-            'role' : 'system',
-            'content' : sys_prompt
-        }
-        usr = {
-            'role' : 'user',
-            'content' : usr_query
-        }
+
+        sys = Message(role = "system", content = sys_prompt)
+        usr = Message(role = "user", content = usr_query)
+ 
         chat_payload = {
-            'messages' : [sys,usr],
+            'messages' : [sys.dict(),usr.dict()],
             **self.default_gen_config
         }
         return chat_payload
@@ -50,6 +48,48 @@ class AzureGPTLLM():
             )
         response =  response.choices[0].message.content
         return response
+    
+    def chat(self,query:Data):
+        sys_prompt = query.metadata[SYSTEM_PROMPT]
+        usr_query = query.metadata[USER_PROMPT]
+
+        chat_payload = self.chat_payload(sys_prompt,usr_query)
+
+        res = self.call_llm(chat_payload)
+
+        query.metadata[RESPONSE] = res
+        return query
+
+    def __call__(self, query:Data):
+        return self.chat(query)
+    
+class OpenRouterLLM():
+    def __init__(self, api_key = None, model = "google/gemini-flash-1.5-8b-exp", stream = False) -> None:
+        
+        self.url = "https://openrouter.ai/api/v1/chat/completions"
+        self.headers = {
+            "Authorization" : f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        self.payload = {
+           "model": model
+        }
+        self.stream = stream
+        pass 
+
+    def chat_payload(self, sys_prompt, usr_query):
+
+        sys = Message(role = "system", content = sys_prompt)
+        usr = Message(role = "user", content = usr_query)
+
+        self.payload["messages"] = [sys.dict(),usr.dict()]
+
+        return self.payload
+     
+    def call_llm(self,chat_payload):
+
+        response = requests.post(url=self.url, json=chat_payload, headers=self.headers).json()
+        return  response["choices"][0]["message"]["content"]
     
     def chat(self,query:Data):
         sys_prompt = query.metadata[SYSTEM_PROMPT]

@@ -13,8 +13,13 @@ def create_collections(request: dict):
     summary_collection_name = request.get("summary_collection_name") or DEFAULT_SUMMARY_COLLECTION_NAME
     vector_name = request.get("vector_name") or DEFAULT_VECTOR_NAME
 
+    if FREE_VERSION:
+        EMB_SIZE = FREE_EMB_SIZE 
+    else:
+        EMB_SIZE = OPENAI_EMB_SIZE
+
     vector_configuration = {
-        vector_name: VectorParams(size=1536, distance=Distance.COSINE)
+        vector_name: VectorParams(size=EMB_SIZE, distance=Distance.COSINE)
     }
 
     qdrant_database = QdrantDB()

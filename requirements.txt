@@ -3,3 +3,4 @@ openai
 qdrant_client
 pymongo
 fastapi
+sentence-transformers

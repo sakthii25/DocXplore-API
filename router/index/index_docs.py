@@ -9,27 +9,27 @@ from core.vectordb import QdrantDB
 from core.constants import *
 from core.prompt import SummarizerPrompt,CodextractorPrompt
 
+from data.psql import Postgres
+from data.queries import *
+
 logger = logging.getLogger("router")
 
 class IndexDocs:
     def __init__(self) -> None:
         pass
 
-    def index(self, path, collection_name, summary_collection_name):
+    def index(self, content, collection_name, summary_collection_name, meta_data):
 
-        with open(path,"r") as file:
-            text = file.read()
-
-        doc_id = uuid.uuid5(uuid.NAMESPACE_DNS,path).hex
-        data = Data(type = TextType.INDEX, content = text, id=doc_id)
+        doc_id = uuid.uuid4().hex
+        data = Data(type = TextType.INDEX, content = content, id=doc_id)
 
         chunker = Chunking(chunk_size=500,overlap=100) 
         chunked_data = chunker(data) 
 
-        if FREE_VERSION :
-            encoder = OpenEncoder(model=FREE_EMB_MODEL)
-        else:
-            encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
+        # if FREE_VERSION :
+        #     encoder = OpenEncoder(model=FREE_EMB_MODEL)
+        # else:
+        encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
         
         embeded_data = encoder(chunked_data)
         logger.info(f"Document is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
@@ -39,7 +39,14 @@ class IndexDocs:
         logger.info("Sucessfully index the collection 1")
 
         self.doc_summary(data, summary_collection_name)
-        return {"response" : "Successfully index the document"}
+
+        psql = Postgres()
+        psql.insert_query(INSERT_QUERY,(doc_id, meta_data['document_name'], meta_data['document_size'], meta_data['uploaded_date']))
+        psql.close()
+
+        meta_data['id'] = doc_id
+
+        return meta_data
 
     def doc_summary(self, data:Data, summary_collection_name):
 
@@ -73,4 +80,4 @@ class IndexDocs:
         logger.info("Successfully index the document summary and their code")
     
     def __call__(self, req:dict):
-        return self.index(req['path'], req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME)
+        return self.index(req['content'], req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME, req['document_data'])

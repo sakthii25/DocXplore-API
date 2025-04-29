@@ -2,7 +2,7 @@ from typing import List
 from data.types import Data
 from openai import AzureOpenAI
 
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 
 class AzureOpenAIEncoder():
     def __init__(self, deployment_name=None, api_base=None, api_version=None, api_key=None) -> None:

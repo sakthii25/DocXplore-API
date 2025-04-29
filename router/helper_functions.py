@@ -4,6 +4,8 @@ from qdrant_client.models import VectorParams,Distance
 
 from core.vectordb import QdrantDB
 from core.constants import *
+from data.psql import *
+from data.queries import *
 
 def create_collections(request: dict):
 
@@ -13,10 +15,10 @@ def create_collections(request: dict):
     summary_collection_name = request.get("summary_collection_name") or DEFAULT_SUMMARY_COLLECTION_NAME
     vector_name = request.get("vector_name") or DEFAULT_VECTOR_NAME
 
-    if FREE_VERSION:
-        EMB_SIZE = FREE_EMB_SIZE 
-    else:
-        EMB_SIZE = OPENAI_EMB_SIZE
+    # if FREE_VERSION:
+    #     EMB_SIZE = FREE_EMB_SIZE 
+    # else:
+    EMB_SIZE = OPENAI_EMB_SIZE
 
     vector_configuration = {
         vector_name: VectorParams(size=EMB_SIZE, distance=Distance.COSINE)
@@ -49,6 +51,22 @@ def delete_collections(request: dict):
     logger.info(f"Summary collection '{summary_collection_name}' deleted successfully.")
 
     return {"message" : "Successfully deleted the collection"}
+
+
+def delete_document(req: dict):
+
+    id = req['id']
+    collection_name = req['collection_name']
+    summary_collection_name = req['summary_collection_name']
+    psql = Postgres() 
+    psql.delete_query(DELETE_QUERY,(id,))
+    psql.close()
+
+    db = QdrantDB()
+    db.delete_point(PARENT_ID,id,collection_name)
+    db.delete_point(DOC_ID,id,summary_collection_name)
+
+    return {"message" : "Successfully deleted the document"}
 
 class AtlasClient ():
 

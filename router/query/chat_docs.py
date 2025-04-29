@@ -16,10 +16,10 @@ class ChatDocs:
 
         query = Data(type=TextType.QUERY, content=query)
         
-        if FREE_VERSION :
-            encoder = OpenEncoder(model=FREE_EMB_MODEL)
-        else:
-            encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
+        # if FREE_VERSION :
+        #     encoder = OpenEncoder(model=FREE_EMB_MODEL)
+        # else:
+        encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
 
         query = encoder(query)
         logger.info(f"User query is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
@@ -42,11 +42,13 @@ class ChatDocs:
         prompt = CodePrompt()
         query = prompt(query, summary_collection_name)
 
+        #Stream llm Response
+        llm = AzureGPTLLM(deployment_name=AZURE_GPT_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY,stream=True)
+
         #llm call to give the code part for the question
         query = llm(query)
-
-        response = query.metadata[RESPONSE]
-        return {"response" : response}
+        
+        return query.metadata[RESPONSE]
 
     def __call__(self, req:dict):
         return self.chat(req['query'],req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME)

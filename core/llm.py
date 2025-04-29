@@ -35,7 +35,7 @@ class AzureGPTLLM():
         usr = Message(role = "user", content = usr_query)
  
         chat_payload = {
-            'messages' : [sys.dict(),usr.dict()],
+            'messages' : [sys.model_dump(),usr.model_dump()],
             **self.default_gen_config
         }
         return chat_payload
@@ -44,16 +44,23 @@ class AzureGPTLLM():
         response = self.client.chat.completions.create(
                 **chat_payload,
                 model=self.deployment_name,
-                stream=self.stream,
+                stream=self.stream
             )
-        response =  response.choices[0].message.content
-        return response
     
-    def chat(self,query:Data):
+        if self.stream:
+            return response
+        # response = ""
+        # for chunk in response:
+        #     if chunk.choices[0].delta.content is not None:
+        #         print(chunk.choices[0].delta.content)
+        #         response += chunk.choices[0].delta.content
+        # response =  response.choices[0].message.content
+        return response.choices[0].message.content
+    def chat(self, query:Data):
         sys_prompt = query.metadata[SYSTEM_PROMPT]
         usr_query = query.metadata[USER_PROMPT]
 
-        chat_payload = self.chat_payload(sys_prompt,usr_query)
+        chat_payload = self.chat_payload(sys_prompt,usr_query) 
 
         res = self.call_llm(chat_payload)
 

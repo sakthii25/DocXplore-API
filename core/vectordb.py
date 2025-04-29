@@ -27,6 +27,21 @@ class QdrantDB:
 
     def delete_collection(self,collection_name):
         return self.client.delete_collection(collection_name=collection_name)
+    
+    def delete_point(self,keyName,keyValue,collection_name):
+        return self.client.delete(
+            collection_name=collection_name,
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key=keyName,
+                            match=models.MatchValue(value=keyValue)
+                        )
+                    ]
+                )
+            )
+        )
 
     def collection_exists(self,collection_name):
         return self.client.collection_exists(collection_name)

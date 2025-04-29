@@ -18,6 +18,11 @@ class Collection(BaseModel):
     vector_name: Optional[str] = None
     summary_collection_name: Optional[str] = None
 
+class Document(BaseModel):
+    id: str 
+    collection_name: str 
+    summary_collection_name: str
+
 # internal types
 class VectorType(str, Enum):
     DENSE = "dense"

@@ -5,7 +5,7 @@ from data.types import Data
 from core.constants import *
 class QdrantDB:
 
-    def __init__(self, host: str = "http://localhost", port:str=6333, verbose=True):
+    def __init__(self, host: str = QDRANT_URL, port:str=6333, verbose=True):
             self.url = f"{host}:{port}"
             self.client = self._create_client()
             self.verbose = verbose
@@ -13,7 +13,7 @@ class QdrantDB:
     
     def _create_client(self) -> 'QdrantClient':
         try:
-            return QdrantClient(url=self.url)
+            return QdrantClient(url=self.url, api_key=QDRANT_API_KEY)
         except Exception as e:
             print(f"Failed to create QdrantClient: {e}")
             return None

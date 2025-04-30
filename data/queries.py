@@ -1,9 +1,10 @@
+import os 
 
-HOST = "127.0.0.1"
-PORT = "5432"
+HOST = "pg-docxplorer-docxplorer.k.aivencloud.com"
+PORT = "24116"
 DATABASE = "docxplorer"
-USER = "postgres"
-PASSWORD = "password"
+USER = os.getenv("PSQL_USER")
+PASSWORD = os.getenv("PSQL_PASSWORD")
 
 
 INSERT_QUERY = "insert into document_data (document_id, document_name, document_size, uploaded_date) values (%s, %s, %s, %s)"

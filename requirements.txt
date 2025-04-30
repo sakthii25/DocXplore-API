@@ -1,6 +1,7 @@
 pydantic==2.11.3
 openai==1.75.0
-qdrant_client==1.13.3
+qdrant_client==1.13.3 
+requests==2.32.3
 fastapi[standard]
 # sentence-transformers
 psycopg2==2.9.10

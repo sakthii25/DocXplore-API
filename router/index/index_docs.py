@@ -32,7 +32,7 @@ class IndexDocs:
         encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
         
         embeded_data = encoder(chunked_data)
-        logger.info(f"Document is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
+        # logger.info(f"Document is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
 
         db = QdrantDB() 
         db.as_indexer(embeded_data, collection_name=collection_name)

@@ -22,7 +22,7 @@ class ChatDocs:
         encoder = AzureOpenAIEncoder(deployment_name=AZURE_EMB_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
 
         query = encoder(query)
-        logger.info(f"User query is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
+        # logger.info(f"User query is encoded using {"openEncoder" if FREE_VERSION else "azureEncoder"}")
 
         db = QdrantDB()
         query = db.as_retriever(query, collection_name=collection_name)
@@ -37,7 +37,7 @@ class ChatDocs:
             llm = AzureGPTLLM(deployment_name=AZURE_GPT_DEPLOYMENT_NAME,api_base=AZURE_BASE_URL,api_version=AZURE_API_VERSION,api_key=AZURE_API_KEY)
 
         query = llm(query)
-        logger.info(f"{"openRouterLLM" if FREE_VERSION else "azureGPTLLM"} is using for the query")
+        # logger.info(f"{"openRouterLLM" if FREE_VERSION else "azureGPTLLM"} is using for the query")
 
         prompt = CodePrompt()
         query = prompt(query, summary_collection_name)
@@ -47,7 +47,7 @@ class ChatDocs:
 
         #llm call to give the code part for the question
         query = llm(query)
-        
+
         return query.metadata[RESPONSE]
 
     def __call__(self, req:dict):

@@ -61,41 +61,41 @@
 # print("Embedding vector:", type(embedding[0]))
 # print(len(embedding[0]))
 
-from openai import AzureOpenAI 
-import os 
+# from openai import AzureOpenAI 
+# import os 
 
 
-AZURE_GPT_DEPLOYMENT_NAME = os.getenv("AZURE_GPT_DEPLOYMENT_NAME")
-AZURE_EMB_DEPLOYMENT_NAME = os.getenv("AZURE_EMB_DEPLOYMENT_NAME")
-AZURE_BASE_URL = os.getenv("AZURE_OAI_BASE_URL") 
-AZURE_API_VERSION = os.getenv("AZURE_OAI_API_VERSION")
-AZURE_API_KEY = os.getenv("AZURE_OAI_API_KEY")
+# AZURE_GPT_DEPLOYMENT_NAME = os.getenv("AZURE_GPT_DEPLOYMENT_NAME")
+# AZURE_EMB_DEPLOYMENT_NAME = os.getenv("AZURE_EMB_DEPLOYMENT_NAME")
+# AZURE_BASE_URL = os.getenv("AZURE_OAI_BASE_URL") 
+# AZURE_API_VERSION = os.getenv("AZURE_OAI_API_VERSION")
+# AZURE_API_KEY = os.getenv("AZURE_OAI_API_KEY")
 
-client = AzureOpenAI(
-            azure_endpoint=AZURE_BASE_URL,
-            azure_deployment=AZURE_GPT_DEPLOYMENT_NAME,
-            api_version=AZURE_API_VERSION,
-            api_key=AZURE_API_KEY
-        )
+# client = AzureOpenAI(
+#             azure_endpoint=AZURE_BASE_URL,
+#             azure_deployment=AZURE_GPT_DEPLOYMENT_NAME,
+#             api_version=AZURE_API_VERSION,
+#             api_key=AZURE_API_KEY
+#         )
 
-stream = client.chat.completions.create(
-    model=AZURE_GPT_DEPLOYMENT_NAME,
-    messages=[
-        {
-            "role": "user",
-            "content": "Say 'Give me a breif summary about quantum computing.arount (10 paras)",
-        },
-    ],
-    stream=True,
-)
+# stream = client.chat.completions.create(
+#     model=AZURE_GPT_DEPLOYMENT_NAME,
+#     messages=[
+#         {
+#             "role": "user",
+#             "content": "Say 'Give me a breif summary about quantum computing.arount (10 paras)",
+#         },
+#     ],
+#     stream=True,
+# )
 
 # print(stream)
 # print(type(stream))
 
-for chunk in stream:
+# for chunk in stream:
     # print(chunk)
-    if len(chunk.choices) > 0 and chunk.choices[0].delta.content is not None:
-        print(chunk.choices[0].delta.content,end="")
+    # if len(chunk.choices) > 0 and chunk.choices[0].delta.content is not None:
+    #     print(chunk.choices[0].delta.content,end="")
         # print(type(chunk.choices[0]))
         # break
     
@@ -103,3 +103,8 @@ for chunk in stream:
 #     print(chunk)
 #     if chunk.choices[0].delta.content is not None:
 #         print(chunk.choices[0].delta.content, end="")
+
+
+import uuid 
+ 
+print(str(uuid.uuid5(uuid.NAMESPACE_DNS, "sakthi")))

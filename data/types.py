@@ -10,10 +10,12 @@ class IndexDoc(BaseModel):
 
 class QueryDoc(BaseModel):
     query: str 
-    collection_name: str 
-    summary_collection_name: Optional[str] = None
+    user_email: Optional[str] = None
+    # collection_name: str 
+    # summary_collection_name: Optional[str] = None
 
 class Collection(BaseModel):
+    user_email: str
     collection_name: str 
     vector_name: Optional[str] = None
     summary_collection_name: Optional[str] = None
@@ -22,6 +24,14 @@ class Document(BaseModel):
     id: str 
     collection_name: str 
     summary_collection_name: str
+
+class User(BaseModel):
+    user_email: str
+
+class ApiKey(BaseModel):
+    user_email: str 
+    api_key: str 
+    created_at: Optional[str] = None
 
 # internal types
 class VectorType(str, Enum):

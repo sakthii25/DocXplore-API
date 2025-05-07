@@ -1,4 +1,5 @@
 import logging
+import uuid 
 from pymongo import MongoClient
 from qdrant_client.models import VectorParams,Distance
 
@@ -10,10 +11,20 @@ from data.queries import *
 def create_collections(request: dict):
 
     logger = logging.getLogger("router")
+    psql = Postgres() 
 
+    email = request["user_email"]
     main_collection_name = request["collection_name"]
     summary_collection_name = request.get("summary_collection_name") or DEFAULT_SUMMARY_COLLECTION_NAME
     vector_name = request.get("vector_name") or DEFAULT_VECTOR_NAME
+
+    user_data = psql.select_query(SELECT_USER_QUERY, (email,)) # it return always list of 1 cuz email is unique
+    print(user_data)
+    print(type(user_data))
+    user_id = user_data[0][0]
+    print("userid: ",user_id)
+    unique_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + main_collection_name))
+    unique_summary_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + summary_collection_name))
 
     # if FREE_VERSION:
     #     EMB_SIZE = FREE_EMB_SIZE 
@@ -26,16 +37,18 @@ def create_collections(request: dict):
 
     qdrant_database = QdrantDB()
     qdrant_database.create_collection(
-        collection_name=main_collection_name,
+        collection_name=unique_collection_name,
         vectors_config=vector_configuration
     )
     logger.info(f"Main collection '{main_collection_name}' created successfully.")
     qdrant_database.create_collection(
-        collection_name=summary_collection_name,
+        collection_name=unique_summary_collection_name,
         vectors_config=vector_configuration
     )
-    logger.info(f"Summary collection '{summary_collection_name}' created successfully.")
+    logger.info(f"Summary collection '{summary_collection_name}' created successfully.") 
 
+    psql.insert_query(INSERT_COLLECTION_QUERY, (user_id, main_collection_name, summary_collection_name))
+    psql.close()
     return {"message": "Collections created successfully"}
 
 def delete_collections(request: dict):

@@ -18,7 +18,7 @@ class IndexDocs:
     def __init__(self) -> None:
         pass
 
-    def index(self, content, collection_name, summary_collection_name, meta_data):
+    def index(self, content, collection_name, summary_collection_name):
 
         doc_id = uuid.uuid4().hex
         data = Data(type = TextType.INDEX, content = content, id=doc_id)
@@ -40,13 +40,7 @@ class IndexDocs:
 
         self.doc_summary(data, summary_collection_name)
 
-        psql = Postgres()
-        psql.insert_query(INSERT_QUERY,(doc_id, meta_data['document_name'], meta_data['document_size'], meta_data['uploaded_date']))
-        psql.close()
-
-        meta_data['id'] = doc_id
-
-        return meta_data
+        return doc_id
 
     def doc_summary(self, data:Data, summary_collection_name):
 
@@ -79,5 +73,19 @@ class IndexDocs:
         db.as_indexer(data, collection_name=summary_collection_name)
         logger.info("Successfully index the document summary and their code")
     
-    def __call__(self, req:dict):
-        return self.index(req['content'], req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME, req['document_data'])
+    def __call__(self, req:dict): 
+        email = req['user_email']
+        psql = Postgres()
+        user_data = psql.select_query(SELECT_USER_QUERY, (email,))
+        user_id = user_data[0][0] # unique user id 
+
+        unique_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + req['collection_name']))
+        unique_summary_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + req['summary_collection_name']))
+
+        doc_id = self.index(req['content'], unique_collection_name, unique_summary_collection_name) 
+
+        meta_data = req['document_data']
+        psql.insert_query(INSERT_QUERY,(doc_id, user_id, meta_data['document_name'], meta_data['document_size'], meta_data['uploaded_time']))
+        meta_data['id'] = doc_id 
+
+        return meta_data

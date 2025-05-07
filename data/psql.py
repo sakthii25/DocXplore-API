@@ -1,16 +1,18 @@
 import psycopg2
-from psycopg2 import OperationalError
+from psycopg2 import OperationalError,extras
 from data.queries import *
 
+
+extras.register_uuid()
 class Postgres:
     def __init__(self):
         try:
             self.connection = psycopg2.connect(
-                host=HOST,
-                port=PORT,
+                host=LOCAL_HOST,
+                port=LOCAL_PORT,
                 database=DATABASE,
-                user=USER,
-                password=PASSWORD
+                user=LOCAL_USER,
+                password=LOCAL_PASSWORD
             )
             self.cursor = self.connection.cursor()
         except OperationalError as e:

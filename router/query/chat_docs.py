@@ -5,7 +5,11 @@ from core.llm import AzureGPTLLM, OpenRouterLLM
 from data.types import Data,TextType
 from core.constants import *
 
+from data.psql import Postgres
+from data.queries import *
+
 import logging 
+import uuid
 
 logger = logging.getLogger("router")
 class ChatDocs:
@@ -50,5 +54,17 @@ class ChatDocs:
 
         return query.metadata[RESPONSE]
 
-    def __call__(self, req:dict):
-        return self.chat(req['query'],req['collection_name'], req.get('summary_collection_name') or DEFAULT_SUMMARY_COLLECTION_NAME)
+    def __call__(self, req:dict): 
+        email = req['user_email'] 
+        psql = Postgres() 
+        user_data = psql.select_query(SELECT_USER_QUERY, (email,))
+        user_id = user_data[0][0] # unique user id  
+
+        collection_data = psql.select_query(SELECT_COLLECTION_QUERY,(user_id,))
+        collection_name = collection_data[0][2]
+        summary_collection_name = collection_data[0][3]
+        
+        unique_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + collection_name))
+        unique_summary_collection_name = str(uuid.uuid5(uuid.NAMESPACE_DNS, email + summary_collection_name))
+
+        return self.chat(req['query'],unique_collection_name, unique_summary_collection_name)
